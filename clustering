@@ -1,0 +1,76 @@
+import math
+
+import numpy as np
+from matplotlib import pyplot as plt
+from sklearn.datasets.samples_generator import make_blobs
+import random
+import sys
+
+# dataset 1
+Data, y = make_blobs(n_samples=15000, centers=5, cluster_std=[3.9, 1.7, 1.5, 5.9, 2.8], n_features=2, random_state=10,
+                     center_box=(-35.0, 25.0))
+Data = np.vstack(
+    (Data[y == 0][:5000], Data[y == 1][:4500], Data[y == 2][:4000], Data[y == 3][:2000], Data[y == 4][:1000]))
+
+y = np.hstack((y[y == 0][:5000], y[y == 1][:4500], y[y == 2][:4000], y[y == 3][:2000], y[y == 4][:1000]))
+
+# dataset 2
+X2, y2 = make_blobs(n_samples=3500, cluster_std=[1.0, 2.5, 0.5], random_state=170, center_box=(-15.0, 5.0))
+
+
+def euclidian_dist(x, y):
+    return math.sqrt((x[0] - y[0])**2 + (x[1] - y[1])**2)
+
+
+def manhattan_dist(x, y):
+    return abs(x[0] - y[0]) + abs(x[1] - y[1]) 
+
+
+def init_centroids(D, r, init, dist):
+    X = np.zeros((D.shape[1], r))
+    if init == "random":
+        for x in range(X.shape[0]):
+            for y in range(X.shape[1]):
+                X[x, y] = random.randrange(-35, 25)
+    return X
+
+
+def cluster_assignments(X, D, dist):  ## TODO: check if rows/columns are queried correctly
+    Y = np.zeros((D.shape[0], X.shape[1]))
+    for i in range(D.shape[0]):  # For each datapoint
+        min_dist = sys.maxsize
+        for t in range(X.shape[1]):  # For each centroid
+            if dist(D[i], X[:, t]) < min_dist:
+                min_dist = dist(D[i], X[:, t])
+                Y[i, :] = np.zeros(len(Y[i]))
+                Y[i, t] = 1
+    return Y
+
+
+def centroid_update(Y, D):
+    X = np.zeros((D.shape[1], Y.shape[1]))
+    for s in range(X.shape[1]):
+        sum = np.zeros(X.shape[0])
+        for i in range(Y.shape[0]):
+            if Y[i, s] == 1:
+                sum = sum + D[i, :].T
+
+        X[:, s] = (1 / np.linalg.norm(Y[:, s], ord=1)) * sum
+    return X
+
+
+def k_means(r, D, init, dist):
+    X = init_centroids(D, r, init, dist)
+    for i in range(10):
+        print(i)
+        Y = cluster_assignments(X, D, dist)
+        X = centroid_update(Y, D)
+    return X, Y
+
+
+X, Y = k_means(5, Data, "random", euclidian_dist)
+print(X)
+
+plt.scatter(Data[:, 0], Data[:, 1], s=50)
+plt.scatter(X[0], X[1], c='r')
+plt.show()
