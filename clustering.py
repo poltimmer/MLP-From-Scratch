@@ -32,6 +32,36 @@ def init_centroids(D, r, init, dist):
         for x in range(X.shape[0]):
             for y in range(X.shape[1]):
                 X[x, y] = random.randrange(-35, 25)
+
+    if init == "forgy":
+        dataset = [row.T for row in D]
+        for y in range(X.shape[1]):
+            X[:, y] = random.sample(dataset, 1)[0]
+
+    if init == "k-means++":
+        s = 0
+        r = X.shape[1]
+        dataset = [row.T for row in D]
+        X_new = np.zeros((D.shape[1], 1))
+        X_new[:, 0] = random.sample(dataset, 1)[0]
+        X = X_new
+        while s < r-1:
+            s += 1
+            dists = []
+            for row in D:
+                min_dist = sys.maxsize
+                for s in range(X.shape[1]):
+                    distance = dist(row, X[:,s])
+                    if distance < min_dist:
+                        min_dist = distance
+                dists.append(min_dist)
+            dists_squared = [dist**2 for dist in dists]
+            sum_squared = np.sum(dists_squared)
+            probabilities = [dist/sum_squared for dist in dists_squared]
+            choice = np.random.choice(range(D.shape[0]), p=probabilities)
+            X_new[:, 0] = D[choice, :]
+            X = np.c_[X, X_new]
+
     return X
 
 
@@ -68,7 +98,7 @@ def k_means(r, D, init, dist):
     return X, Y
 
 
-X, Y = k_means(5, Data, "random", euclidian_dist)
+X, Y = k_means(5, Data, "k-means++", euclidian_dist)
 print(X)
 
 plt.scatter(Data[:, 0], Data[:, 1], s=50)
