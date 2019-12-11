@@ -85,7 +85,14 @@ def centroid_update(Y, D):
             if Y[i, s] == 1:
                 sum = sum + D[i, :].T
 
-        X[:, s] = (1 / np.linalg.norm(Y[:, s], ord=1)) * sum
+        # X[:, s] = (1 / np.linalg.norm(Y[:, s], ord=1)) * sum
+
+        norm_one = np.linalg.norm(Y[:, s], ord=1)
+        if norm_one == 0:
+            X[:, s] = 0
+            print('help')
+        else:
+            X[:, s] = (1 / norm_one) * sum
     return X
 
 
@@ -98,7 +105,7 @@ def k_means(r, D, init, dist):
     return X, Y
 
 
-X, Y = k_means(5, Data, "k-means++", euclidian_dist)
+X, Y = k_means(5, Data, "random", euclidian_dist)
 print(X)
 
 plt.scatter(Data[:, 0], Data[:, 1], s=50)
