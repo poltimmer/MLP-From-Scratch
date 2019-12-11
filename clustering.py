@@ -23,7 +23,7 @@ def euclidian_dist(x, y):
 
 
 def manhattan_dist(x, y):
-    return abs(x[0] - y[0]) + abs(x[1] - y[1]) 
+    return abs(x[0] - y[0]) + abs(x[1] - y[1])
 
 
 def init_centroids(D, r, init, dist):
