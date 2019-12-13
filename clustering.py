@@ -3,6 +3,7 @@ import math
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.datasets.samples_generator import make_blobs
+from sklearn.metrics.cluster import normalized_mutual_info_score
 import random
 import sys
 
@@ -31,7 +32,7 @@ def init_centroids(D, r, init, dist):
     if init == "random":
         for x in range(X.shape[0]):
             for y in range(X.shape[1]):
-                X[x, y] = random.randrange(-35, 25)
+                X[x, y] = random.randrange(-15, 5.0)
 
     if init == "forgy":
         dataset = [row.T for row in D]
@@ -39,19 +40,19 @@ def init_centroids(D, r, init, dist):
             X[:, y] = random.sample(dataset, 1)[0]
 
     if init == "k-means++":
-        s = 0
+        s = 1
         r = X.shape[1]
         dataset = [row.T for row in D]
         X_new = np.zeros((D.shape[1], 1))
         X_new[:, 0] = random.sample(dataset, 1)[0]
         X = X_new
-        while s < r-1:
+        while s < r:
             s += 1
             dists = []
             for row in D:
                 min_dist = sys.maxsize
-                for s in range(X.shape[1]):
-                    distance = dist(row, X[:,s])
+                for i in range(X.shape[1]):
+                    distance = dist(row, X[:,i])
                     if distance < min_dist:
                         min_dist = distance
                 dists.append(min_dist)
@@ -59,6 +60,7 @@ def init_centroids(D, r, init, dist):
             sum_squared = np.sum(dists_squared)
             probabilities = [dist/sum_squared for dist in dists_squared]
             choice = np.random.choice(range(D.shape[0]), p=probabilities)
+            X_new = np.zeros((D.shape[1], 1))
             X_new[:, 0] = D[choice, :]
             X = np.c_[X, X_new]
 
@@ -85,14 +87,7 @@ def centroid_update(Y, D):
             if Y[i, s] == 1:
                 sum = sum + D[i, :].T
 
-        # X[:, s] = (1 / np.linalg.norm(Y[:, s], ord=1)) * sum
-
-        norm_one = np.linalg.norm(Y[:, s], ord=1)
-        if norm_one == 0:
-            X[:, s] = 0
-            print('help')
-        else:
-            X[:, s] = (1 / norm_one) * sum
+        X[:, s] = (1 / np.linalg.norm(Y[:, s], ord=1)) * sum
     return X
 
 
@@ -104,10 +99,30 @@ def k_means(r, D, init, dist):
         X = centroid_update(Y, D)
     return X, Y
 
+sum = 0
 
-X, Y = k_means(5, Data, "random", euclidian_dist)
-print(X)
+for i in range(5):
+    X, Y = k_means(3, X2, "random", manhattan_dist)
+    clusters = []
+    for row in range(Y.shape[0]):
+        for col in range(Y.shape[1]):
+            if Y[row][col] == 1:
+                clusters.append(col)
 
-plt.scatter(Data[:, 0], Data[:, 1], s=50)
-plt.scatter(X[0], X[1], c='r')
-plt.show()
+    LABEL_COLOR_MAP = {0: 'm',
+                       1: 'g',
+                       2: 'b',
+                       3: 'c',
+                       4: 'y',
+                       }
+
+    colors = [LABEL_COLOR_MAP[l] for l in clusters]
+
+    plt.scatter(X2[:, 0], X2[:, 1], s=50, c=colors)
+    plt.scatter(X[0], X[1], c='r')
+    plt.show()
+
+    sum += normalized_mutual_info_score(y2, clusters)
+
+average = sum/5
+print(average)
