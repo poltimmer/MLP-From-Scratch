@@ -36,7 +36,8 @@ datasets = [
 
 
 def norm(x, y):
-    return math.sqrt((x[0] - y[0])**2 + (x[1] - y[1])**2)
+    return math.sqrt((x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2)
+
 
 def getIw(W):
     Iw = np.zeros(W.shape[0])
@@ -44,8 +45,10 @@ def getIw(W):
         Iw[i] = np.sum(W[i])
     return Iw
 
+
 def SimKNN(D):
     return sklearn.neighbors.kneighbors_graph(D, n_neighbors=10, mode="distance")
+
 
 def SimEps(D):
     epsilon = 0.1
@@ -57,9 +60,10 @@ def SimEps(D):
                 W[i][j] = 1
     return W
 
+
 def Lsym(W):
     IwDiag = getIw(W)
-    IwDiagPowered = IwDiag**(-1/2)
+    IwDiagPowered = IwDiag ** (-1 / 2)
     Iw = np.diag(IwDiagPowered)
     return np.identity(W.shape[0]) - Iw @ W @ Iw
 
@@ -68,7 +72,7 @@ def spectralClustering(r, D, Sim, LaPlacian):
     W = Sim(D)
     L = LaPlacian(W)
 
-    Lambda, V = np.linalg.eigh(L)
+    Lambda, V = np.linalg.eigh(L)  # TODO: select r eigenvalues/vectors with best fit for L
 
     # Remove the first column
     np.delete(V, 0, 1)
@@ -77,7 +81,7 @@ def spectralClustering(r, D, Sim, LaPlacian):
     kmeans = KMeans(r).fit(V)
     X = kmeans.cluster_centers_
     Y = kmeans.labels_
-    return (X, Y)
+    return X, Y
 
 
 Xresult, Yresult = spectralClustering(2, aniso[0], SimEps, Lsym)
