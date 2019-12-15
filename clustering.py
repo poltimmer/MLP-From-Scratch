@@ -20,7 +20,7 @@ X2, y2 = make_blobs(n_samples=3500, cluster_std=[1.0, 2.5, 0.5], random_state=17
 
 
 def euclidian_dist(x, y):
-    return math.sqrt((x[0] - y[0])**2 + (x[1] - y[1])**2)
+    return math.sqrt((x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2)
 
 
 def manhattan_dist(x, y):
@@ -52,13 +52,13 @@ def init_centroids(D, r, init, dist):
             for row in D:
                 min_dist = sys.maxsize
                 for i in range(X.shape[1]):
-                    distance = dist(row, X[:,i])
+                    distance = dist(row, X[:, i])
                     if distance < min_dist:
                         min_dist = distance
                 dists.append(min_dist)
-            dists_squared = [dist**2 for dist in dists]
+            dists_squared = [dist ** 2 for dist in dists]
             sum_squared = np.sum(dists_squared)
-            probabilities = [dist/sum_squared for dist in dists_squared]
+            probabilities = [dist / sum_squared for dist in dists_squared]
             choice = np.random.choice(range(D.shape[0]), p=probabilities)
             X_new = np.zeros((D.shape[1], 1))
             X_new[:, 0] = D[choice, :]
@@ -99,6 +99,7 @@ def k_means(r, D, init, dist):
         X = centroid_update(Y, D)
     return X, Y
 
+
 sum = 0
 
 for i in range(5):
@@ -124,5 +125,5 @@ for i in range(5):
 
     sum += normalized_mutual_info_score(y2, clusters)
 
-average = sum/5
+average = sum / 5
 print(average)
