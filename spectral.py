@@ -72,8 +72,8 @@ def spectralClustering(r, D, Sim, LaPlacian):
     W = Sim(D)
     L = LaPlacian(W)
 
-    Lambda, V = np.linalg.eigh(L)  # TODO: select r eigenvalues/vectors with best fit for L
-    V = V[:, 1:r]
+    Lambda, V = np.linalg.eigh(L)
+    V = V[:, 1:r+1]
 
     # Do k-means on V
     kmeans = KMeans(r).fit(V)
@@ -81,7 +81,7 @@ def spectralClustering(r, D, Sim, LaPlacian):
     return Y
 
 
-dataset = datasets[0]
+dataset = datasets[1]
 labels = spectralClustering(dataset[1], dataset[0][0], SimEps, Lsym)
 
 LABEL_COLOR_MAP = {0: 'm',
