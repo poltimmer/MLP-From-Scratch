@@ -51,7 +51,7 @@ def SimKNN(D):
 
 
 def SimEps(D):
-    epsilon = 0.1
+    epsilon = 0.3
     n = D.shape[0]
     W = np.zeros((n, n))
     for i in range(n):
@@ -68,59 +68,20 @@ def Lsym(W):
     return np.identity(W.shape[0]) - Iw @ W @ Iw
 
 
-def fitEig(L):
-    Lambda, V = np.linalg.eigh(L)
-    # l_comp = V[:,40:] @ np.diag(Lambda[40:]) @ V[:,40:].T
-    # eig_norm = np.linalg.norm(L-l_comp)
-    # v_min = None
-    # lamb_min = None
-    # norm_min = sys.maxsize
-    # for i in range(len(Lambda)):
-    #     # print(i)
-    #     for j in range(len(Lambda)):
-    #         if i != j:
-    #             v_new = np.array([V[:,i],V[:,j]]).T
-    #             lamb_new = np.array([Lambda[i], Lambda[j]])
-    #             l_comp_new = v_new @ np.diag(lamb_new) @ v_new.T
-    #             norm_new = np.linalg.norm(L - l_comp_new)
-    #             # v_new = V
-    #             # lamb_new = Lambda
-    #             # l_comp_new = L
-    #             # test_speed = L - l_comp_new
-    #             # speed = test_speed.T
-    #             # norm_new = 1
-    #             if norm_new < norm_min:
-    #                 v_min = v_new
-    #                 lamb_min = lamb_new
-    #                 norm_min = norm_new
-    # l_comp_min = v_min @ np.diag(lamb_min) @ v_min.T
-    # print(norm_min)
-    # print(v_min)
-    # print(lamb_min)
-    # return norm_min
-
-
 def spectralClustering(r, D, Sim, LaPlacian):
     W = Sim(D)
     L = LaPlacian(W)
 
     Lambda, V = np.linalg.eigh(L)  # TODO: select r eigenvalues/vectors with best fit for L
-    # fitEig(L)
-    # V = V[:, -r:-1]
-    # V = V[:, 1:r + 1]
-    # V = V[:, -(r-1):]
-    # V = V[:, 1:r]
-    V = V[:, :r - 1]  # selects first r eigenvectors
+    V = V[:, 1:r]
 
     # Do k-means on V
     kmeans = KMeans(r).fit(V)
-    # X = kmeans.cluster_centers_  # These cluster centers are in the laplacian space and therefore don't make sense
-    # to plot
     Y = kmeans.labels_
     return Y
 
 
-dataset = datasets[2]
+dataset = datasets[0]
 labels = spectralClustering(dataset[1], dataset[0][0], SimEps, Lsym)
 
 LABEL_COLOR_MAP = {0: 'm',
@@ -132,5 +93,4 @@ LABEL_COLOR_MAP = {0: 'm',
 
 colors = [LABEL_COLOR_MAP[l] for l in labels]
 plt.scatter(dataset[0][0][:, 0], dataset[0][0][:, 1], s=50, c=colors)
-# plt.scatter(Xresult[0], Xresult[1], c='r')
 plt.show()
