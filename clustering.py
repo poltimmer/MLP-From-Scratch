@@ -67,7 +67,7 @@ def init_centroids(D, r, init, dist):
     return X
 
 
-def cluster_assignments(X, D, dist):  ## TODO: check if rows/columns are queried correctly
+def cluster_assignments(X, D, dist):
     Y = np.zeros((D.shape[0], X.shape[1]))
     for i in range(D.shape[0]):  # For each datapoint
         min_dist = sys.maxsize
@@ -87,14 +87,17 @@ def centroid_update(Y, D):
             if Y[i, s] == 1:
                 sum = sum + D[i, :].T
 
-        X[:, s] = (1 / np.linalg.norm(Y[:, s], ord=1)) * sum
+        norm = np.linalg.norm(Y[:, s], ord=1)
+        if norm == 0:
+            X[:, s] = sum
+        else:
+            X[:, s] = (1 / norm) * sum
     return X
 
 
 def k_means(r, D, init, dist):
     X = init_centroids(D, r, init, dist)
-    for i in range(10):
-        print(i)
+    for i in range(25):
         Y = cluster_assignments(X, D, dist)
         X = centroid_update(Y, D)
     return X, Y
@@ -102,8 +105,8 @@ def k_means(r, D, init, dist):
 
 sum = 0
 
-for i in range(5):
-    X, Y = k_means(3, X2, "random", manhattan_dist)
+for i in range(10):
+    X, Y = k_means(5, Data, "kmeans++", manhattan_dist)
     clusters = []
     for row in range(Y.shape[0]):
         for col in range(Y.shape[1]):
@@ -119,11 +122,11 @@ for i in range(5):
 
     colors = [LABEL_COLOR_MAP[l] for l in clusters]
 
-    plt.scatter(X2[:, 0], X2[:, 1], s=50, c=colors)
+    plt.scatter(Data[:, 0], Data[:, 1], s=50, c=colors)
     plt.scatter(X[0], X[1], c='r')
     plt.show()
 
-    sum += normalized_mutual_info_score(y2, clusters)
+    sum += normalized_mutual_info_score(y, clusters)
 
-average = sum / 5
+average = sum / 10
 print(average)
