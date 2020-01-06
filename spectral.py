@@ -47,11 +47,11 @@ def getIw(W):
 
 
 def SimKNN(D):
-    return sklearn.neighbors.kneighbors_graph(D, n_neighbors=10, mode="distance")
+    return sklearn.neighbors.kneighbors_graph(D, n_neighbors=250, mode="distance")
 
 
 def SimEps(D):
-    epsilon = 0.3
+    epsilon = 1.226226
     n = D.shape[0]
     W = np.zeros((n, n))
     for i in range(n):
@@ -81,7 +81,7 @@ def spectralClustering(r, D, Sim, LaPlacian):
     return Y
 
 
-dataset = datasets[1]
+dataset = datasets[3]
 labels = spectralClustering(dataset[1], dataset[0][0], SimEps, Lsym)
 
 LABEL_COLOR_MAP = {0: 'm',
