@@ -11,10 +11,21 @@ plt.xlabel('X_0')
 plt.ylabel('X_1')
 plt.show()
 
+
+def reLu(M):
+    W = np.zeros(M.shape)
+
+    for i, row in enumerate(M):
+        for j, val in enumerate(row):
+            W[i, j] = max(0, val)
+
+    return W
+
+
 def softmax(raw_preds):
-	'''
-	pass raw predictions through softmax activation function
-	'''
-	out = np.exp(raw_preds) #exponentiate vector of raw predictions
-	#divide exponentiated vector by its sum. All values in the output sum to 1
-	return out / np.sum(out)
+    """
+    pass raw predictions through softmax activation function
+    """
+    out = np.exp(raw_preds)  # exponentiate vector of raw predictions
+    # divide exponentiated vector by its sum. All values in the output sum to 1
+    return out / np.sum(out)
