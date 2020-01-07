@@ -11,6 +11,11 @@ plt.xlabel('X_0')
 plt.ylabel('X_1')
 plt.show()
 
+W1 = np.random.rand(2, 10)
+W2 = np.random.rand(10, 10)
+W3 = np.random.rand(10, 1)
+
+b1 = np.random.rand()
 
 def reLu(M):
     W = np.zeros(M.shape)
@@ -29,3 +34,11 @@ def softmax(raw_preds):
     out = np.exp(raw_preds)  # exponentiate vector of raw predictions
     # divide exponentiated vector by its sum. All values in the output sum to 1
     return out / np.sum(out)
+
+x = df[["X_0", "X_1"]].to_numpy()
+
+h0 = reLu(x)
+h1 = reLu(h0)
+output = softmax(h1)
+
+print(output)
