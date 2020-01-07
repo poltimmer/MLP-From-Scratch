@@ -3,6 +3,12 @@ import math
 import numpy as np
 from matplotlib import pyplot as plt
 
+IN_SIZE = 2
+HID_0_SIZE = 10
+HID_1_SIZE = 10
+OUT_SIZE = 2
+
+
 df = pd.read_csv('./HW3train.csv')
 
 plt.scatter(df['X_0'], df['X_1'], c=df['y'], alpha=0.5)
@@ -34,11 +40,7 @@ x = df[["X_0", "X_1"]].to_numpy().T
 
 n = x.shape[1]
 
-HID_0_SIZE = 10
-HID_1_SIZE = 10
-OUT_SIZE = 2
-
-W0 = np.ones((2, HID_0_SIZE))
+W0 = np.ones((IN_SIZE, HID_0_SIZE))
 W1 = np.ones((HID_0_SIZE, HID_1_SIZE))
 W2 = np.ones((HID_1_SIZE, OUT_SIZE))
 
