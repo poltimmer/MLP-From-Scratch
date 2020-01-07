@@ -3,7 +3,7 @@ import math
 import numpy as np
 from matplotlib import pyplot as plt
 
-df = pd.read_csv('C:/Users/Rick/Desktop/2IIG0/HW3/HW3train.csv')
+df = pd.read_csv('./HW3train.csv')
 
 plt.scatter(df['X_0'], df['X_1'], c=df['y'], alpha=0.5)
 plt.title('Training set data')
@@ -21,6 +21,7 @@ def reLu(M):
 
     return W
 
+D = reLu(L)
 
 def softmax(raw_preds):
     """
