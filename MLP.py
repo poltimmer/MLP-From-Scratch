@@ -1,12 +1,15 @@
 import pandas as pd
 import math
 import numpy as np
+from random import seed
+from random import randint
 from matplotlib import pyplot as plt
 
 IN_SIZE = 2
 HID_0_SIZE = 10
 HID_1_SIZE = 10
 OUT_SIZE = 2
+learning_rate = 0.1
 
 
 df = pd.read_csv('./HW3train.csv')
@@ -38,11 +41,12 @@ def softmax(raw_preds):
 
     return result
 
+def crossEntropy(o):
+    return -math.log(o, 2)
+
 
 input = df[["X_0", "X_1"]].to_numpy().T / 10000
-
-x = np.array(input[:,0]).T
-# x = input[:, 0]
+seed(1)
 
 W0 = np.ones((IN_SIZE, HID_0_SIZE))
 W1 = np.ones((HID_0_SIZE, HID_1_SIZE))
@@ -52,9 +56,28 @@ b0 = np.zeros(HID_0_SIZE)
 b1 = np.zeros(HID_1_SIZE)
 b2 = np.zeros(OUT_SIZE)
 
-# function within reLu might be wrong
-h0 = reLu((W0.T @ x) + b0)
-h1 = reLu((W1.T @ h0) + b1)
-output = softmax((W2.T @ h1) + b2)
+L = 1
 
-print(output)
+while (L >= 0.1):
+    # take random input
+    index = randint(0, input.shape[1] - 1)
+    x = np.array(input[:, index]).T
+    y = df.loc[index, "y"]
+
+    # forward pass
+    h0 = reLu((W0.T @ x) + b0)
+    h1 = reLu((W1.T @ h0) + b1)
+    output = softmax((W2.T @ h1) + b2)
+
+    print(output)
+
+    # back propagation
+    L = crossEntropy(output[y])
+
+    W0 -= learning_rate * 1 * L
+    W1 -= learning_rate * 1 * L
+    W2 -= learning_rate * 1 * L
+
+    b0 -= learning_rate * 1 * L
+    b1 -= learning_rate * 1 * L
+    b2 -= learning_rate * 1 * L
