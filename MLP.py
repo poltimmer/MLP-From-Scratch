@@ -19,14 +19,13 @@ plt.show()
 '''
 
 
-def reLu(M):
-    W = np.zeros(M.shape)
 
-    for i, row in enumerate(M):
-        for j, val in enumerate(row):
-            W[i, j] = max(0, val)
+def reLu(v):
+    w = np.zeros(v.shape)
+    for i, val in enumerate(v):
+        w[i] = max(0, val)
 
-    return W
+    return w
 
 
 def softmax(raw_preds):
@@ -42,19 +41,20 @@ def softmax(raw_preds):
 
 input = df[["X_0", "X_1"]].to_numpy().T / 10000
 
-x = input[:,0]
+x = np.array(input[:,0]).T
+# x = input[:, 0]
 
 W0 = np.ones((IN_SIZE, HID_0_SIZE))
 W1 = np.ones((HID_0_SIZE, HID_1_SIZE))
 W2 = np.ones((HID_1_SIZE, OUT_SIZE))
 
-b0 = np.zeros((HID_0_SIZE, 1))
-b1 = np.zeros((HID_1_SIZE, 1))
-b2 = np.zeros((OUT_SIZE, 1))
+b0 = np.zeros(HID_0_SIZE)
+b1 = np.zeros(HID_1_SIZE)
+b2 = np.zeros(OUT_SIZE)
 
 # function within reLu might be wrong
-h0 = reLu(W0.T @ x.T + b0.T)
-h1 = reLu(W1.T @ h0 + b1)
-output = softmax(W2.T @ h1 + b2)
+h0 = reLu((W0.T @ x) + b0)
+h1 = reLu((W1.T @ h0) + b1)
+output = softmax((W2.T @ h1) + b2)
 
 print(output)
