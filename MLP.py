@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 IN_SIZE = 2
 HID_0_SIZE = 10
 HID_1_SIZE = 10
-OUT_SIZE = 2
+OUT_SIZE = 1
 learning_rate = 0.1
 
 
@@ -23,7 +23,7 @@ plt.show()
 
 
 
-def reLu(v):
+def ReLU(v):
     w = np.zeros(v.shape)
     for i, val in enumerate(v):
         w[i] = max(0, val)
@@ -31,18 +31,26 @@ def reLu(v):
     return w
 
 
-def softmax(raw_preds):
+#def softmax(raw_preds):
     """
     pass raw predictions through softmax activation function
     """
-    out = np.exp(raw_preds)  # exponentiate vector of raw predictions
+#    out = np.exp(raw_preds)  # exponentiate vector of raw predictions
     # divide exponentiated vector by its sum. All values in the output sum to 1
-    return out / np.sum(out)
+#    return out / np.sum(out)
 
-    return result
+def ReLUDerivative(x):
+    if x >= 0:
+        return 1
+    else:
+        return 0
 
-def crossEntropy(o):
-    return -math.log(o, 2)
+
+def sigmoid(raw_preds):
+    return 1 / (1 + math.exp(-raw_preds))
+
+def sigmoidDerivative(x):
+    return sigmoid(x) * (1 - sigmoid(x))
 
 
 input = df[["X_0", "X_1"]].to_numpy().T / 10000
@@ -65,19 +73,22 @@ while (L >= 0.1):
     y = df.loc[index, "y"]
 
     # forward pass
-    h0 = reLu((W0.T @ x) + b0)
-    h1 = reLu((W1.T @ h0) + b1)
-    output = softmax((W2.T @ h1) + b2)
+    h0 = ReLU((W0.T @ x) + b0)
+    h1 = ReLU((W1.T @ h0) + b1)
+    output = sigmoid((W2.T @ h1) + b2)
 
     print(output)
 
     # back propagation
-    L = crossEntropy(output[y])
+    #G(w2) = h1 * G(q)
+    #G(w1) =
 
-    W0 -= learning_rate * 1 * L
-    W1 -= learning_rate * 1 * L
-    W2 -= learning_rate * 1 * L
+    #loss = crossEntropy(output[y])
 
-    b0 -= learning_rate * 1 * L
-    b1 -= learning_rate * 1 * L
-    b2 -= learning_rate * 1 * L
+    #W0 -= learning_rate * 1 * L
+    #W1 -= learning_rate * 1 * L
+    #W2 -= learning_rate * 1 * L
+
+    #b0 -= learning_rate * 1 * L
+    #b1 -= learning_rate * 1 * L
+    #b2 -= learning_rate * 1 * L
