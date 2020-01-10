@@ -52,6 +52,15 @@ def sigmoid(raw_preds):
 def sigmoidDerivative(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
+def grad_q(q, o, y):
+    return sigmoidDerivative(q) * (o - y)
+
+def grad_p(x, W2, q):
+    return np.dot( np.multiply( ReLUDerivative(x), W2 ), q)
+
+def grad_r(x, W1, p):
+    return np.dot( np.multiply( ReLUDerivative(x), W1 ), p)
+
 
 input = df[["X_0", "X_1"]].to_numpy().T / 10000
 seed(1)
@@ -76,21 +85,31 @@ while (L >= 0.1):
     h0 = ReLU((W0.T @ x) + b0)
     h1 = ReLU((W1.T @ h0) + b1)
     output = sigmoid((W2.T @ h1) + b2)
-
     print(output)
 
     # back propagation
-    #G(w2) = h1 * G(q)
-    #G(w1) =
+    grad_q_vec = grad_q(x, output, y)
+    grad_W2 = np.outer(h1, grad_q_vec)
+    grad_b2 = grad_q_vec
 
-    # W0 -= learning_rate * 1 * L
-    # b0 -= learning_rate * 1 * L
-    #
-    # W1 -= learning_rate * 1 * L
-    # b1 -= learning_rate * 1 * L
-    #
-    # W2 -= learning_rate * 1 * L
-    # b2 -= learning_rate * 1 * L
+    grad_p_vec = grad_p(x, W2, grad_q_vec)
+
+    grad_W1 = np.outer(h0, grad_p)
+    grad_b1 = grad_p_vec
+
+    grad_r_vec = grad_r(x, W1, grad_p_vec)
+
+    grad_W0 = np.outer(x, grad_r_vec)
+    grad_b0 = grad_r_vec
+
+    W0 -= learning_rate * grad_W0 * L
+    b0 -= learning_rate * grad_b0 * L
+
+    W1 -= learning_rate * grad_W1 * L
+    b1 -= learning_rate * grad_b1 * L
+
+    W2 -= learning_rate * grad_W2 * L
+    b2 -= learning_rate * grad_b2 * L
 
 
 
@@ -111,8 +130,3 @@ while (L >= 0.1):
 # grad_q = deriv_sigmoid(q) * (o - y)
 
 # een begin
-def grad_q(q, o, y):
-    return deriv_sigmoid(q) * (o - y)
-
-grad_q_vec = grad_q(q, o, y)
-grad_w2 = np.outer(h1, grad_q_vec)
