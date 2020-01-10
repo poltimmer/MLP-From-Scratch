@@ -74,10 +74,36 @@ while (L >= 0.1):
     # back propagation
     L = crossEntropy(output[y])
 
-    W0 -= learning_rate * 1 * L
-    W1 -= learning_rate * 1 * L
-    W2 -= learning_rate * 1 * L
+    # W0 -= learning_rate * 1 * L
+    # b0 -= learning_rate * 1 * L
+    #
+    # W1 -= learning_rate * 1 * L
+    # b1 -= learning_rate * 1 * L
+    #
+    # W2 -= learning_rate * 1 * L
+    # b2 -= learning_rate * 1 * L
 
-    b0 -= learning_rate * 1 * L
-    b1 -= learning_rate * 1 * L
-    b2 -= learning_rate * 1 * L
+
+
+# derivatives voor alle variabelen.
+# grad_w0 = x (outer prod) grad_r // geeft een matrix
+# grad_b0 = grad_r
+#
+# grad_r = deriv_relu (elementwise mult) w1 (dot prod) * grad_p // geeft een vector
+#
+# grad_w1 = h_0 (outer prod) grad_p // geeft een matrix
+# grad_b1 = grad_p
+#
+# grad_p = deriv_relu (elementwise mult) w2 (dot prod) grad_q // geeft een vector
+#
+# grad_w2 = h_1 (outer prod) grad_q // geeft een matrix
+# grad_b2 = grad_q
+#
+# grad_q = deriv_sigmoid(q) * (o - y)
+
+# een begin
+def grad_q(q, o, y):
+    return deriv_sigmoid(q) * (o - y)
+
+grad_q_vec = grad_q(q, o, y)
+grad_w2 = np.outer(h1, grad_q_vec)
