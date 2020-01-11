@@ -7,19 +7,17 @@ from matplotlib import pyplot as plt
 
 IN_SIZE = 2
 HID_0_SIZE = 10
-HID_1_SIZE = 10
+HID_1_SIZE = 5
 OUT_SIZE = 2
-learning_rate = 0.1
-
+learning_rate = 0.01
 
 df = pd.read_csv('./HW3train.csv')
-'''
+
 plt.scatter(df['X_0'], df['X_1'], c=df['y'], alpha=0.5)
 plt.title('Training set data')
 plt.xlabel('X_0')
 plt.ylabel('X_1')
 plt.show()
-'''
 
 
 
@@ -30,13 +28,14 @@ def ReLU(v):
 
     return w
 
-
-#def softmax(raw_preds):
+    # def softmax(raw_preds):
     """
     pass raw predictions through softmax activation function
     """
+
+
 #    out = np.exp(raw_preds)  # exponentiate vector of raw predictions
-    # divide exponentiated vector by its sum. All values in the output sum to 1
+# divide exponentiated vector by its sum. All values in the output sum to 1
 #    return out / np.sum(out)
 
 def ReLUDerivative(x):
@@ -45,27 +44,43 @@ def ReLUDerivative(x):
 
     return x
 
+
 def sigmoid(raw_preds):
-    for n in range(len(raw_preds)):
-        raw_preds[n] = 1 / (1 + math.exp(-raw_preds[n]))
+    for i, gamma in enumerate(raw_preds):
+        if gamma < 0:
+            raw_preds[i] = 1 - 1 / (1 + math.exp(gamma))
+        else:
+            raw_preds[i] = 1 / (1 + math.exp(-gamma))
 
     return raw_preds
+
 
 def sigmoidDerivative(x):
     return sigmoid(x) * (1 - sigmoid(x))
 
+
+def grad_o(o, y):
+    return o - np.array([y, 1 - y])
+
+
 def grad_q(q, o, y):
-    return sigmoidDerivative(q) * (o - y)
+    return sigmoidDerivative(q) * grad_o(o, y)
 
-def grad_p(x, W2, q):
-    return np.multiply(ReLUDerivative(x), W2 @ q)
 
-def grad_r(x, W1, p):
-    return np.multiply(ReLUDerivative(x), W1 @ p)
+def grad_p(x, W2, g_q):
+    return np.multiply(ReLUDerivative(x), W2 @ g_q)
+
+
+def grad_r(x, W1, g_p):
+    return np.multiply(ReLUDerivative(x), W1 @ g_p)
 
 
 input = df[["X_0", "X_1"]].to_numpy().T / 10000
 seed(1)
+
+# W0 = np.full((IN_SIZE, HID_0_SIZE), 1 / IN_SIZE)
+# W1 = np.full((HID_0_SIZE, HID_1_SIZE), 1 / HID_0_SIZE)
+# W2 = np.full((HID_1_SIZE, OUT_SIZE), 1 / HID_1_SIZE)
 
 W0 = np.ones((IN_SIZE, HID_0_SIZE))
 W1 = np.ones((HID_0_SIZE, HID_1_SIZE))
@@ -77,7 +92,7 @@ b2 = np.zeros(OUT_SIZE)
 
 L = 1
 
-while (L >= 0.1):
+while L >= 0.1:
     # take random input
     index = randint(0, input.shape[1] - 1)
     x = np.array(input[:, index]).T
@@ -92,7 +107,7 @@ while (L >= 0.1):
     output = sigmoid(q)
 
     # back propagation
-    grad_q_vec = grad_q(q, x, y)
+    grad_q_vec = grad_q(q, output, y)
     grad_W2 = np.outer(h1, grad_q_vec)
     grad_b2 = grad_q_vec
 
@@ -106,16 +121,14 @@ while (L >= 0.1):
     grad_W0 = np.outer(x, grad_r_vec)
     grad_b0 = grad_r_vec
 
-    W0 -= learning_rate * grad_W0 * L
-    b0 -= learning_rate * grad_b0 * L
+    W0 -= learning_rate * grad_W0
+    b0 -= learning_rate * grad_b0
 
-    W1 -= learning_rate * grad_W1 * L
-    b1 -= learning_rate * grad_b1 * L
+    W1 -= learning_rate * grad_W1
+    b1 -= learning_rate * grad_b1
 
-    W2 -= learning_rate * grad_W2 * L
-    b2 -= learning_rate * grad_b2 * L
-
-
+    W2 -= learning_rate * grad_W2
+    b2 -= learning_rate * grad_b2
 
 # derivatives voor alle variabelen.
 # grad_w0 = x (outer prod) grad_r // geeft een matrix
