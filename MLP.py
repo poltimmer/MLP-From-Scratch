@@ -9,16 +9,16 @@ IN_SIZE = 2
 HID_0_SIZE = 10
 HID_1_SIZE = 10
 OUT_SIZE = 1
-learning_rate = 0.03
+learning_rate = 0.1
 RELU_LEAK = 0.01
 
 df = pd.read_csv('./HW3train.csv')
 
-plt.scatter(df['X_0'], df['X_1'], c=df['y'], alpha=0.5)
-plt.title('Training set data')
-plt.xlabel('X_0')
-plt.ylabel('X_1')
-plt.show()
+# plt.scatter(df['X_0'], df['X_1'], c=df['y'], alpha=0.5)
+# plt.title('Training set data')
+# plt.xlabel('X_0')
+# plt.ylabel('X_1')
+# plt.show()
 
 
 def ReLU(v): # is nu een leaky ReLU omdat ik dacht dat we te maken hadden met vanishing gradient, maar kan weg denk ik
@@ -93,7 +93,7 @@ b2 = np.random.rand(OUT_SIZE) - 0.5
 
 L = 1 # wordt nog niet gebruikt
 
-for i in range(50000):
+for i in range(25000):
     # take random input
     index = randint(0, input.shape[1] - 1)
     x = np.array(input[:, index]).T
@@ -144,9 +144,14 @@ for i in range(input.shape[1]):
     h1 = ReLU(p)
     q = (W2.T @ h1) + b2
     output = sigmoid(q)
-    predicts[i] = output
+    predicts[i] = int(round(output[0]))
 
-# NOW PLOT PREDICTS
+print(predicts)
+plt.scatter(input[0], input[1], c=predicts, alpha=0.5)
+plt.title('result')
+plt.xlabel('X_0')
+plt.ylabel('X_1')
+plt.show()
 
 
 # derivatives voor alle variabelen.
