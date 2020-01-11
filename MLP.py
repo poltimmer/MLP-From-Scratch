@@ -40,10 +40,10 @@ def ReLU(v):
 #    return out / np.sum(out)
 
 def ReLUDerivative(x):
-    if x >= 0:
-        return 1
-    else:
-        return 0
+    for x in np.nditer(x, op_flags=['readwrite']):
+        x[...] = 1 if x[...] >= 0 else 0
+
+    return x
 
 
 def sigmoid(raw_preds):
@@ -82,22 +82,24 @@ while (L >= 0.1):
     y = df.loc[index, "y"]
 
     # forward pass
-    h0 = ReLU((W0.T @ x) + b0)
-    h1 = ReLU((W1.T @ h0) + b1)
-    output = sigmoid((W2.T @ h1) + b2)
-    print(output)
+    r = (W0.T @ x) + b0
+    h0 = ReLU(r)
+    p = (W1.T @ h0) + b1
+    h1 = ReLU(p)
+    q = (W2.T @ h1) + b2
+    output = sigmoid(q)
 
     # back propagation
-    grad_q_vec = grad_q(x, output, y)
+    grad_q_vec = grad_q(q, x, y)
     grad_W2 = np.outer(h1, grad_q_vec)
     grad_b2 = grad_q_vec
 
-    grad_p_vec = grad_p(x, W2, grad_q_vec)
+    grad_p_vec = grad_p(p, W2, grad_q_vec)
 
     grad_W1 = np.outer(h0, grad_p)
     grad_b1 = grad_p_vec
 
-    grad_r_vec = grad_r(x, W1, grad_p_vec)
+    grad_r_vec = grad_r(r, W1, grad_p_vec)
 
     grad_W0 = np.outer(x, grad_r_vec)
     grad_b0 = grad_r_vec
