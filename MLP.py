@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 IN_SIZE = 2
 HID_0_SIZE = 10
 HID_1_SIZE = 10
-OUT_SIZE = 1
+OUT_SIZE = 2
 learning_rate = 0.1
 
 
@@ -40,14 +40,17 @@ def ReLU(v):
 #    return out / np.sum(out)
 
 def ReLUDerivative(x):
-    for x in np.nditer(x, op_flags=['readwrite']):
-        x[...] = 1 if x[...] >= 0 else 0
+    for n in np.nditer(x, op_flags=['readwrite']):
+        n[...] = 1 if n >= 0 else 0
 
     return x
 
 
 def sigmoid(raw_preds):
-    return 1 / (1 + math.exp(-raw_preds))
+    for n in range(len(raw_preds)):
+        raw_preds[n] = 1 / (1 + math.exp(-raw_preds[n]))
+
+    return raw_preds
 
 def sigmoidDerivative(x):
     return sigmoid(x) * (1 - sigmoid(x))
@@ -56,10 +59,10 @@ def grad_q(q, o, y):
     return sigmoidDerivative(q) * (o - y)
 
 def grad_p(x, W2, q):
-    return np.dot( np.multiply( ReLUDerivative(x), W2 ), q)
+    return np.multiply(ReLUDerivative(x), W2 @ q)
 
 def grad_r(x, W1, p):
-    return np.dot( np.multiply( ReLUDerivative(x), W1 ), p)
+    return np.multiply(ReLUDerivative(x), W1 @ p)
 
 
 input = df[["X_0", "X_1"]].to_numpy().T / 10000
@@ -96,7 +99,7 @@ while (L >= 0.1):
 
     grad_p_vec = grad_p(p, W2, grad_q_vec)
 
-    grad_W1 = np.outer(h0, grad_p)
+    grad_W1 = np.outer(h0, grad_p_vec)
     grad_b1 = grad_p_vec
 
     grad_r_vec = grad_r(r, W1, grad_p_vec)
