@@ -45,7 +45,6 @@ def ReLUDerivative(x):
 
     return x
 
-
 def sigmoid(raw_preds):
     for n in range(len(raw_preds)):
         raw_preds[n] = 1 / (1 + math.exp(-raw_preds[n]))
