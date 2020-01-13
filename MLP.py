@@ -10,7 +10,7 @@ IN_SIZE = 2
 HID_0_SIZE = 10
 HID_1_SIZE = 10
 OUT_SIZE = 1
-learning_rate = 0.1
+learning_rate = 0.01
 RELU_LEAK = 0.01
 
 df_train = pd.read_csv('./HW3train.csv')
@@ -92,21 +92,30 @@ seed(1)
 # W1 = np.full((HID_0_SIZE, HID_1_SIZE), 1 / HID_0_SIZE)
 # W2 = np.full((HID_1_SIZE, OUT_SIZE), 1 / HID_1_SIZE)
 
-W0 = np.random.rand(IN_SIZE, HID_0_SIZE) - 0.5
-W1 = np.random.rand(HID_0_SIZE, HID_1_SIZE) - 0.5
-W2 = np.random.rand(HID_1_SIZE, OUT_SIZE) - 0.5
+# W0 = np.random.rand(IN_SIZE, HID_0_SIZE) - 0.5
+# W1 = np.random.rand(HID_0_SIZE, HID_1_SIZE) - 0.5
+# W2 = np.random.rand(HID_1_SIZE, OUT_SIZE) - 0.5
 
 # W0 = np.zeros((IN_SIZE, HID_0_SIZE))
 # W1 = np.zeros((HID_0_SIZE, HID_1_SIZE))
 # W2 = np.zeros((HID_1_SIZE, OUT_SIZE))
 
-b0 = np.random.rand(HID_0_SIZE) - 0.5
-b1 = np.random.rand(HID_1_SIZE) - 0.5
-b2 = np.random.rand(OUT_SIZE) - 0.5
+# b0 = np.random.rand(HID_0_SIZE) - 0.5
+# b1 = np.random.rand(HID_1_SIZE) - 0.5
+# b2 = np.random.rand(OUT_SIZE) - 0.5
 
 # b0 = np.zeros(HID_0_SIZE)
 # b1 = np.zeros(HID_1_SIZE)
 # b2 = np.zeros(OUT_SIZE)
+
+sigma = 0.9
+W0 = np.random.normal(0, sigma, (IN_SIZE, HID_0_SIZE))
+W1 = np.random.normal(0, sigma, (HID_0_SIZE, HID_1_SIZE))
+W2 = np.random.normal(0, sigma, (HID_1_SIZE, OUT_SIZE))
+
+b0 = np.random.normal(0, sigma, HID_0_SIZE)
+b1 = np.random.normal(0, sigma, HID_1_SIZE)
+b2 = np.random.normal(0, sigma, OUT_SIZE)
 
 predicts_train = np.zeros(input_training.shape[1])
 predicts_validate = np.zeros(input_validate.shape[1])
@@ -114,7 +123,7 @@ L_training = [0.5] * 1000
 L_validate = 1
 nrIterations = 1
 
-while sum(L_training)/len(L_training) > 0.02 and nrIterations <= 50000:
+while nrIterations <= 10000:
     # take random input_training
     index = randint(0, input_training.shape[1] - 1)
     x = np.array(input_training[:, index]).T
@@ -159,7 +168,6 @@ while sum(L_training)/len(L_training) > 0.02 and nrIterations <= 50000:
     # loss_list.append([nrIterations, loss])
     nrIterations += 1
 
-print(nrIterations)
 # Show output graph
 # print(predicts_validate)
 # plt.scatter(input_validate[0], input_validate[1], c=predicts_validate, alpha=0.5)
@@ -188,10 +196,17 @@ for i in range(input_validate.shape[1]):
     output = sigmoid(q)
     predicts_validate[i] = int(round(output[0]))
 
-cm = confusion_matrix(y_vec_validate, predicts_validate, labels=[0, 1])
-print(cm)
+#cm = confusion_matrix(y_vec_validate, predicts_validate, labels=[0, 1])
+#print(cm)
+accuracy = 0
+for i in range(len(predicts_validate)):
+    if (y_vec_validate[i] == predicts_validate[i]):
+        accuracy += 1
 
-plt.show()
+print("accuracy: " + str(accuracy/len(predicts_validate)))
+
+
+#plt.show()
 
 # derivatives voor alle variabelen.
 # grad_w0 = x (outer prod) grad_r // geeft een matrix
