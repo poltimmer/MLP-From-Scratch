@@ -10,7 +10,7 @@ IN_SIZE = 2
 HID_0_SIZE = 10
 HID_1_SIZE = 10
 OUT_SIZE = 1
-learning_rate = 0.01
+learning_rate = 0.1
 RELU_LEAK = 0.01
 
 df_train = pd.read_csv('./HW3train.csv')
@@ -74,12 +74,11 @@ def grad_r(x, W1, g_p):
 
 
 def MSE(x, y):
-    sum = 0
-    n = len(x)
-    for i in range(n):
-        error = (x[i] - y[i]) ** 2
-        sum += error
-    return sum / n
+    res = 0
+    for a, b in zip(x, y):
+        error = (a - b) ** 2
+        res += error
+    return res / len(x)
 
 
 input_training = df_train[["X_0", "X_1"]].to_numpy().T / 10000
@@ -119,11 +118,12 @@ b2 = np.random.normal(0, sigma, OUT_SIZE)
 
 predicts_train = np.zeros(input_training.shape[1])
 predicts_validate = np.zeros(input_validate.shape[1])
-L_training = [0.5] * 1000
-L_validate = 1
-nrIterations = 1
+stopping_crit = [0.5] * 100
+L_training = 0.5
+L_validate = 0.5
+nrIterations = 0
 
-while nrIterations <= 10000:
+while L_validate > 0.025 and nrIterations < 30000:
     # take random input_training
     index = randint(0, input_training.shape[1] - 1)
     x = np.array(input_training[:, index]).T
@@ -160,14 +160,49 @@ while nrIterations <= 10000:
     W2 -= learning_rate * grad_W2
     b2 -= learning_rate * grad_b2
 
-    L_training.pop(0)
-    loss = (output[0] - y)**2
-    L_training.append(loss)
+    # stopping_crit.pop(0)
+    # loss = (output[0] - y) ** 2
+    # stopping_crit.append(loss)
 
-    loss_list.append([nrIterations, sum(L_training)/len(L_training)])
+    if nrIterations % 50 == 0:
+        # Calculate loss function for training set
+        for i in range(input_training.shape[1]):
+            x = np.array(input_training[:, i]).T
+
+            # forward pass
+            r = (W0.T @ x) + b0
+            h0 = ReLU(r)
+            p = (W1.T @ h0) + b1
+            h1 = ReLU(p)
+            q = (W2.T @ h1) + b2
+            predicts_train[i] = sigmoid(q)[0]
+
+        L_training = MSE(predicts_train, y_vec_train)
+
+        # Calculate loss function for validate set
+        for i in range(input_validate.shape[1]):
+            x = np.array(input_validate[:, i]).T
+
+            # forward pass
+            r = (W0.T @ x) + b0
+            h0 = ReLU(r)
+            p = (W1.T @ h0) + b1
+            h1 = ReLU(p)
+            q = (W2.T @ h1) + b2
+            predicts_validate[i] = sigmoid(q)[0]
+
+        L_validate = MSE(predicts_validate, y_vec_validate)
+
+    # stopping_crit.pop(0)
+    # stopping_crit.append(L_validate)
+
+        loss_list.append([nrIterations, L_training, L_validate, sum(stopping_crit)/len(stopping_crit)])
     # loss_list.append([nrIterations, loss])
     nrIterations += 1
 
+print(nrIterations)
+# print(sum(stopping_crit)/len(stopping_crit))
+# print(len(stopping_crit))
 # Show output graph
 # print(predicts_validate)
 # plt.scatter(input_validate[0], input_validate[1], c=predicts_validate, alpha=0.5)
@@ -177,11 +212,12 @@ while nrIterations <= 10000:
 # plt.show()
 
 # Show loss function graph
-loss_dataframe = pd.DataFrame(loss_list, columns=["iteration", "train"])
+loss_dataframe = pd.DataFrame(loss_list, columns=["epoch", "train", "validate", "stop crit"])
 ax = plt.gca()
 
-loss_dataframe.plot(kind='line',x='iteration',y='train',ax=ax)
-# loss_dataframe.plot(kind='line',x='iteration',y='validate', color='red', ax=ax)
+loss_dataframe.plot(kind='line',x='epoch',y='validate', color='red', ax=ax)
+loss_dataframe.plot(kind='line',x='epoch',y='train',ax=ax)
+# loss_dataframe.plot(kind='line',x='epoch',y='stop crit', color='green', ax=ax)
 
 # Calculate confusion matrix for validation set
 for i in range(input_validate.shape[1]):
