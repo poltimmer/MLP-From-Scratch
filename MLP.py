@@ -4,6 +4,7 @@ import numpy as np
 from random import seed
 from random import randint
 from matplotlib import pyplot as plt
+from sklearn.metrics import confusion_matrix
 
 IN_SIZE = 2
 HID_0_SIZE = 10
@@ -12,7 +13,10 @@ OUT_SIZE = 1
 learning_rate = 0.1
 RELU_LEAK = 0.01
 
-df = pd.read_csv('./HW3train.csv')
+df_train = pd.read_csv('./HW3train.csv')
+df_test = pd.read_csv('./HW3validate.csv')
+loss_list = []
+
 
 # plt.scatter(df['X_0'], df['X_1'], c=df['y'], alpha=0.5)
 # plt.title('Training set data')
@@ -21,12 +25,13 @@ df = pd.read_csv('./HW3train.csv')
 # plt.show()
 
 
-def ReLU(v): # is nu een leaky ReLU omdat ik dacht dat we te maken hadden met vanishing gradient, maar kan weg denk ik
+def ReLU(v):  # is nu een leaky ReLU omdat ik dacht dat we te maken hadden met vanishing gradient, maar kan weg denk ik
     w = np.zeros(v.shape)
     for i, val in enumerate(v):
         w[i] = max(RELU_LEAK * val, val)
 
     return w
+
 
 def ReLUDerivative(v):
     res = np.copy(v)
@@ -68,36 +73,52 @@ def grad_r(x, W1, g_p):
     return np.multiply(ReLUDerivative(x), W1 @ g_p)
 
 
-input = df[["X_0", "X_1"]].to_numpy().T / 10000
+def MSE(x, y):
+    sum = 0
+    n = len(x)
+    for i in range(n):
+        error = (x[i] - y[i]) ** 2
+        sum += error
+    return sum / n
+
+
+input_training = df_train[["X_0", "X_1"]].to_numpy().T / 10000
+input_test = df_test[["X_0", "X_1"]].to_numpy().T / 10000
+y_vec_train = df_train["y"]
+y_vec_test = df_test["y"]
 seed(1)
 
 # W0 = np.full((IN_SIZE, HID_0_SIZE), 1 / IN_SIZE)
 # W1 = np.full((HID_0_SIZE, HID_1_SIZE), 1 / HID_0_SIZE)
 # W2 = np.full((HID_1_SIZE, OUT_SIZE), 1 / HID_1_SIZE)
 
-W0 = np.random.rand(IN_SIZE, HID_0_SIZE) - 0.5
-W1 = np.random.rand(HID_0_SIZE, HID_1_SIZE) - 0.5
-W2 = np.random.rand(HID_1_SIZE, OUT_SIZE) - 0.5
+# W0 = np.random.rand(IN_SIZE, HID_0_SIZE) - 0.5
+# W1 = np.random.rand(HID_0_SIZE, HID_1_SIZE) - 0.5
+# W2 = np.random.rand(HID_1_SIZE, OUT_SIZE) - 0.5
 
-# W0 = np.ones((IN_SIZE, HID_0_SIZE))
-# W1 = np.ones((HID_0_SIZE, HID_1_SIZE))
-# W2 = np.ones((HID_1_SIZE, OUT_SIZE))
+W0 = np.zeros((IN_SIZE, HID_0_SIZE))
+W1 = np.zeros((HID_0_SIZE, HID_1_SIZE))
+W2 = np.zeros((HID_1_SIZE, OUT_SIZE))
 
-b0 = np.random.rand(HID_0_SIZE) - 0.5
-b1 = np.random.rand(HID_1_SIZE) - 0.5
-b2 = np.random.rand(OUT_SIZE) - 0.5
+# b0 = np.random.rand(HID_0_SIZE) - 0.5
+# b1 = np.random.rand(HID_1_SIZE) - 0.5
+# b2 = np.random.rand(OUT_SIZE) - 0.5
 
-# b0 = np.zeros(HID_0_SIZE)
-# b1 = np.zeros(HID_1_SIZE)
-# b2 = np.zeros(OUT_SIZE)
+b0 = np.zeros(HID_0_SIZE)
+b1 = np.zeros(HID_1_SIZE)
+b2 = np.zeros(OUT_SIZE)
 
-L = 1 # wordt nog niet gebruikt
+predicts_train = np.zeros(input_training.shape[1])
+predicts_test = np.zeros(input_test.shape[1])
+L_training = 1
+L_test = 1
+nrIterations = 1
 
-for i in range(25000):
-    # take random input
-    index = randint(0, input.shape[1] - 1)
-    x = np.array(input[:, index]).T
-    y = df.loc[index, "y"]
+while (L_training > 0.05 and nrIterations <= 5000):
+    # take random input_training
+    index = randint(0, input_training.shape[1] - 1)
+    x = np.array(input_training[:, index]).T
+    y = df_train.loc[index, "y"]
 
     # forward pass
     r = (W0.T @ x) + b0
@@ -131,28 +152,58 @@ for i in range(25000):
     W2 -= learning_rate * grad_W2
     b2 -= learning_rate * grad_b2
 
+    # Calculate loss function for training set
+    for i in range(input_training.shape[1]):
+        x = np.array(input_training[:, i]).T
 
-predicts = np.zeros(input.shape[1])
-for i in range(input.shape[1]):
-    x = np.array(input[:, i]).T
-    y = df.loc[i, "y"]
+        # forward pass
+        r = (W0.T @ x) + b0
+        h0 = ReLU(r)
+        p = (W1.T @ h0) + b1
+        h1 = ReLU(p)
+        q = (W2.T @ h1) + b2
+        output = sigmoid(q)
+        predicts_train[i] = int(round(output[0]))
 
-    # forward pass
-    r = (W0.T @ x) + b0
-    h0 = ReLU(r)
-    p = (W1.T @ h0) + b1
-    h1 = ReLU(p)
-    q = (W2.T @ h1) + b2
-    output = sigmoid(q)
-    predicts[i] = int(round(output[0]))
+    L_training = MSE(predicts_train, y_vec_train)
 
-print(predicts)
-plt.scatter(input[0], input[1], c=predicts, alpha=0.5)
-plt.title('result')
-plt.xlabel('X_0')
-plt.ylabel('X_1')
+    # Calculate loss function for test set
+    for i in range(input_test.shape[1]):
+        x = np.array(input_test[:, i]).T
+
+        # forward pass
+        r = (W0.T @ x) + b0
+        h0 = ReLU(r)
+        p = (W1.T @ h0) + b1
+        h1 = ReLU(p)
+        q = (W2.T @ h1) + b2
+        output = sigmoid(q)
+        predicts_test[i] = int(round(output[0]))
+
+    L_test = MSE(predicts_test, y_vec_test)
+
+    loss_list.append([nrIterations, L_training, L_test])
+    nrIterations += 1
+
+# Show output graph
+# print(predicts_test)
+# plt.scatter(input_test[0], input_test[1], c=predicts_test, alpha=0.5)
+# plt.title('result')
+# plt.xlabel('X_0')
+# plt.ylabel('X_1')
+# plt.show()
+
+# Show loss function graph
+loss_dataframe = pd.DataFrame(loss_list, columns=["iteration", "train", "test"])
+ax = plt.gca()
+
+loss_dataframe.plot(kind='line',x='iteration',y='train',ax=ax)
+loss_dataframe.plot(kind='line',x='iteration',y='test', color='red', ax=ax)
+
+cm = confusion_matrix(y_vec_test, predicts_test, labels=[0, 1])
+print(cm)
+
 plt.show()
-
 
 # derivatives voor alle variabelen.
 # grad_w0 = x (outer prod) grad_r // geeft een matrix
