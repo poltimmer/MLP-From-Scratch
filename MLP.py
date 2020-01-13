@@ -342,3 +342,66 @@ plt.show()
 #                             "learning_rate": "Learning rate", "accuracy": "Accuracy", },
 #                             color_continuous_scale=px.colors.diverging.Tealrose)
 # fig_hyper.show()
+
+# Exercise 7
+# while nrIterations <= 10000:
+
+    #if nrIterations == 1:
+    #    heatmap= []
+    #    for i in range(input_validate.shape[1]):
+    #        x = np.array(input_validate[:, i]).T
+
+            # forward pass
+            #r = (W0.T @ x) + b0
+            #h0 = ReLU(r)
+            #p = (W1.T @ h0) + b1
+            #h1 = ReLU(p)
+
+            #activations = h0.tolist() + h1.tolist()
+            #heatmap.append(activations)
+        #fig, ax = plt.subplots()
+        #im = ax.imshow(heatmap)
+
+        #ax.set_title("Activations after connection initialization - Worst model")
+        #fig.tight_layout()
+        #plt.show()
+
+    #if nrIterations == 5000:
+        #heatmap = []
+        #for i in range(input_validate.shape[1]):
+            #x = np.array(input_validate[:, i]).T
+
+            # forward pass
+            #r = (W0.T @ x) + b0
+            #h0 = ReLU(r)
+            #p = (W1.T @ h0) + b1
+            #h1 = ReLU(p)
+
+            #activations = h0.tolist() + h1.tolist()
+            #heatmap.append(activations)
+        #fig, ax = plt.subplots()
+        #im = ax.imshow(heatmap)
+
+        #ax.set_title("Activations at half of the training process - Worst model")
+        #fig.tight_layout()
+        #plt.show()
+
+    #if nrIterations == 10000:
+        #heatmap = []
+        #for i in range(input_validate.shape[1]):
+            #x = np.array(input_validate[:, i]).T
+
+            # forward pass
+            #r = (W0.T @ x) + b0
+            #h0 = ReLU(r)
+            #p = (W1.T @ h0) + b1
+            #h1 = ReLU(p)
+
+            #activations = h0.tolist() + h1.tolist()
+            #heatmap.append(activations)
+        #fig, ax = plt.subplots()
+        #im = ax.imshow(heatmap)
+
+        #ax.set_title("Activations at end of the training process - Worst model")
+        #fig.tight_layout()
+        #plt.show()
