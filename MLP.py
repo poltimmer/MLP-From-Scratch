@@ -14,7 +14,7 @@ learning_rate = 0.1
 RELU_LEAK = 0.01
 
 df_train = pd.read_csv('./HW3train.csv')
-df_test = pd.read_csv('./HW3validate.csv')
+df_validate = pd.read_csv('./HW3validate.csv')
 loss_list = []
 
 
@@ -83,38 +83,38 @@ def MSE(x, y):
 
 
 input_training = df_train[["X_0", "X_1"]].to_numpy().T / 10000
-input_test = df_test[["X_0", "X_1"]].to_numpy().T / 10000
+input_validate = df_validate[["X_0", "X_1"]].to_numpy().T / 10000
 y_vec_train = df_train["y"]
-y_vec_test = df_test["y"]
+y_vec_validate = df_validate["y"]
 seed(1)
 
 # W0 = np.full((IN_SIZE, HID_0_SIZE), 1 / IN_SIZE)
 # W1 = np.full((HID_0_SIZE, HID_1_SIZE), 1 / HID_0_SIZE)
 # W2 = np.full((HID_1_SIZE, OUT_SIZE), 1 / HID_1_SIZE)
 
-# W0 = np.random.rand(IN_SIZE, HID_0_SIZE) - 0.5
-# W1 = np.random.rand(HID_0_SIZE, HID_1_SIZE) - 0.5
-# W2 = np.random.rand(HID_1_SIZE, OUT_SIZE) - 0.5
+W0 = np.random.rand(IN_SIZE, HID_0_SIZE) - 0.5
+W1 = np.random.rand(HID_0_SIZE, HID_1_SIZE) - 0.5
+W2 = np.random.rand(HID_1_SIZE, OUT_SIZE) - 0.5
 
-W0 = np.zeros((IN_SIZE, HID_0_SIZE))
-W1 = np.zeros((HID_0_SIZE, HID_1_SIZE))
-W2 = np.zeros((HID_1_SIZE, OUT_SIZE))
+# W0 = np.zeros((IN_SIZE, HID_0_SIZE))
+# W1 = np.zeros((HID_0_SIZE, HID_1_SIZE))
+# W2 = np.zeros((HID_1_SIZE, OUT_SIZE))
 
-# b0 = np.random.rand(HID_0_SIZE) - 0.5
-# b1 = np.random.rand(HID_1_SIZE) - 0.5
-# b2 = np.random.rand(OUT_SIZE) - 0.5
+b0 = np.random.rand(HID_0_SIZE) - 0.5
+b1 = np.random.rand(HID_1_SIZE) - 0.5
+b2 = np.random.rand(OUT_SIZE) - 0.5
 
-b0 = np.zeros(HID_0_SIZE)
-b1 = np.zeros(HID_1_SIZE)
-b2 = np.zeros(OUT_SIZE)
+# b0 = np.zeros(HID_0_SIZE)
+# b1 = np.zeros(HID_1_SIZE)
+# b2 = np.zeros(OUT_SIZE)
 
 predicts_train = np.zeros(input_training.shape[1])
-predicts_test = np.zeros(input_test.shape[1])
-L_training = 1
-L_test = 1
+predicts_validate = np.zeros(input_validate.shape[1])
+L_training = [0.5] * 1000
+L_validate = 1
 nrIterations = 1
 
-while (L_training > 0.05 and nrIterations <= 5000):
+while sum(L_training)/len(L_training) > 0.02 and nrIterations <= 50000:
     # take random input_training
     index = randint(0, input_training.shape[1] - 1)
     x = np.array(input_training[:, index]).T
@@ -134,15 +134,14 @@ while (L_training > 0.05 and nrIterations <= 5000):
     grad_b2 = grad_q_vec
 
     grad_p_vec = grad_p(p, W2, grad_q_vec)
-
     grad_W1 = np.outer(h0, grad_p_vec)
     grad_b1 = grad_p_vec
 
     grad_r_vec = grad_r(r, W1, grad_p_vec)
-
     grad_W0 = np.outer(x, grad_r_vec)
     grad_b0 = grad_r_vec
 
+    # Gradient descent
     W0 -= learning_rate * grad_W0
     b0 -= learning_rate * grad_b0
 
@@ -152,55 +151,44 @@ while (L_training > 0.05 and nrIterations <= 5000):
     W2 -= learning_rate * grad_W2
     b2 -= learning_rate * grad_b2
 
-    # Calculate loss function for training set
-    for i in range(input_training.shape[1]):
-        x = np.array(input_training[:, i]).T
+    L_training.pop(0)
+    loss = (output[0] - y)**2
+    L_training.append(loss)
 
-        # forward pass
-        r = (W0.T @ x) + b0
-        h0 = ReLU(r)
-        p = (W1.T @ h0) + b1
-        h1 = ReLU(p)
-        q = (W2.T @ h1) + b2
-        output = sigmoid(q)
-        predicts_train[i] = int(round(output[0]))
-
-    L_training = MSE(predicts_train, y_vec_train)
-
-    # Calculate loss function for test set
-    for i in range(input_test.shape[1]):
-        x = np.array(input_test[:, i]).T
-
-        # forward pass
-        r = (W0.T @ x) + b0
-        h0 = ReLU(r)
-        p = (W1.T @ h0) + b1
-        h1 = ReLU(p)
-        q = (W2.T @ h1) + b2
-        output = sigmoid(q)
-        predicts_test[i] = int(round(output[0]))
-
-    L_test = MSE(predicts_test, y_vec_test)
-
-    loss_list.append([nrIterations, L_training, L_test])
+    loss_list.append([nrIterations, sum(L_training)/len(L_training)])
+    # loss_list.append([nrIterations, loss])
     nrIterations += 1
 
+print(nrIterations)
 # Show output graph
-# print(predicts_test)
-# plt.scatter(input_test[0], input_test[1], c=predicts_test, alpha=0.5)
+# print(predicts_validate)
+# plt.scatter(input_validate[0], input_validate[1], c=predicts_validate, alpha=0.5)
 # plt.title('result')
 # plt.xlabel('X_0')
 # plt.ylabel('X_1')
 # plt.show()
 
 # Show loss function graph
-loss_dataframe = pd.DataFrame(loss_list, columns=["iteration", "train", "test"])
+loss_dataframe = pd.DataFrame(loss_list, columns=["iteration", "train"])
 ax = plt.gca()
 
 loss_dataframe.plot(kind='line',x='iteration',y='train',ax=ax)
-loss_dataframe.plot(kind='line',x='iteration',y='test', color='red', ax=ax)
+# loss_dataframe.plot(kind='line',x='iteration',y='validate', color='red', ax=ax)
 
-cm = confusion_matrix(y_vec_test, predicts_test, labels=[0, 1])
+# Calculate confusion matrix for validation set
+for i in range(input_validate.shape[1]):
+    x = np.array(input_validate[:, i]).T
+
+    # forward pass
+    r = (W0.T @ x) + b0
+    h0 = ReLU(r)
+    p = (W1.T @ h0) + b1
+    h1 = ReLU(p)
+    q = (W2.T @ h1) + b2
+    output = sigmoid(q)
+    predicts_validate[i] = int(round(output[0]))
+
+cm = confusion_matrix(y_vec_validate, predicts_validate, labels=[0, 1])
 print(cm)
 
 plt.show()
