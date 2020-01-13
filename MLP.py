@@ -1,10 +1,11 @@
 import pandas as pd
 import math
 import numpy as np
+import plotly.express as px
 from random import seed
 from random import randint
 from matplotlib import pyplot as plt
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, accuracy_score
 
 IN_SIZE = 2
 HID_0_SIZE = 10
@@ -164,59 +165,53 @@ while L_validate > 0.025 and nrIterations < 30000:
     # loss = (output[0] - y) ** 2
     # stopping_crit.append(loss)
 
-    if nrIterations % 50 == 0:
-        # Calculate loss function for training set
-        for i in range(input_training.shape[1]):
-            x = np.array(input_training[:, i]).T
-
-            # forward pass
-            r = (W0.T @ x) + b0
-            h0 = ReLU(r)
-            p = (W1.T @ h0) + b1
-            h1 = ReLU(p)
-            q = (W2.T @ h1) + b2
-            predicts_train[i] = sigmoid(q)[0]
-
-        L_training = MSE(predicts_train, y_vec_train)
-
-        # Calculate loss function for validate set
-        for i in range(input_validate.shape[1]):
-            x = np.array(input_validate[:, i]).T
-
-            # forward pass
-            r = (W0.T @ x) + b0
-            h0 = ReLU(r)
-            p = (W1.T @ h0) + b1
-            h1 = ReLU(p)
-            q = (W2.T @ h1) + b2
-            predicts_validate[i] = sigmoid(q)[0]
-
-        L_validate = MSE(predicts_validate, y_vec_validate)
+    # # collect plots for loss functions
+    # if nrIterations % 50 == 0:
+    #     # Calculate loss function for training set
+    #     for i in range(input_training.shape[1]):
+    #         x = np.array(input_training[:, i]).T
+    #
+    #         # forward pass
+    #         r = (W0.T @ x) + b0
+    #         h0 = ReLU(r)
+    #         p = (W1.T @ h0) + b1
+    #         h1 = ReLU(p)
+    #         q = (W2.T @ h1) + b2
+    #         predicts_train[i] = sigmoid(q)[0]
+    #
+    #     L_training = MSE(predicts_train, y_vec_train)
+    #
+    #     # Calculate loss function for validate set
+    #     for i in range(input_validate.shape[1]):
+    #         x = np.array(input_validate[:, i]).T
+    #
+    #         # forward pass
+    #         r = (W0.T @ x) + b0
+    #         h0 = ReLU(r)
+    #         p = (W1.T @ h0) + b1
+    #         h1 = ReLU(p)
+    #         q = (W2.T @ h1) + b2
+    #         predicts_validate[i] = sigmoid(q)[0]
+    #
+    #     L_validate = MSE(predicts_validate, y_vec_validate)
 
     # stopping_crit.pop(0)
     # stopping_crit.append(L_validate)
 
-        loss_list.append([nrIterations, L_training, L_validate, sum(stopping_crit)/len(stopping_crit)])
+        # loss_list.append([nrIterations, L_training, L_validate, sum(stopping_crit)/len(stopping_crit)])
     # loss_list.append([nrIterations, loss])
     nrIterations += 1
 
 print(nrIterations)
 # print(sum(stopping_crit)/len(stopping_crit))
 # print(len(stopping_crit))
-# Show output graph
-# print(predicts_validate)
-# plt.scatter(input_validate[0], input_validate[1], c=predicts_validate, alpha=0.5)
-# plt.title('result')
-# plt.xlabel('X_0')
-# plt.ylabel('X_1')
-# plt.show()
 
 # Show loss function graph
-loss_dataframe = pd.DataFrame(loss_list, columns=["epoch", "train", "validate", "stop crit"])
-ax = plt.gca()
-
-loss_dataframe.plot(kind='line',x='epoch',y='validate', color='red', ax=ax)
-loss_dataframe.plot(kind='line',x='epoch',y='train',ax=ax)
+# loss_dataframe = pd.DataFrame(loss_list, columns=["epoch", "train", "validate", "stop crit"])
+# ax = plt.gca()
+#
+# loss_dataframe.plot(kind='line',x='epoch',y='validate', color='red', ax=ax)
+# loss_dataframe.plot(kind='line',x='epoch',y='train',ax=ax)
 # loss_dataframe.plot(kind='line',x='epoch',y='stop crit', color='green', ax=ax)
 
 # Calculate confusion matrix for validation set
@@ -232,17 +227,26 @@ for i in range(input_validate.shape[1]):
     output = sigmoid(q)
     predicts_validate[i] = int(round(output[0]))
 
-#cm = confusion_matrix(y_vec_validate, predicts_validate, labels=[0, 1])
-#print(cm)
-accuracy = 0
-for i in range(len(predicts_validate)):
-    if (y_vec_validate[i] == predicts_validate[i]):
-        accuracy += 1
+# Show output graph
+print(predicts_validate)
+plt.scatter(input_validate[0], input_validate[1], c=predicts_validate, alpha=0.5)
+plt.title('result')
+plt.xlabel('X_0')
+plt.ylabel('X_1')
+plt.show()
 
-print("accuracy: " + str(accuracy/len(predicts_validate)))
+
+# cm = confusion_matrix(y_vec_validate, predicts_validate, labels=[0, 1])
+# print(cm)
+# accuracy = 0
+# for i in range(len(predicts_validate)):
+#     if (y_vec_validate[i] == predicts_validate[i]):
+#         accuracy += 1
+#
+# print("accuracy: " + str(accuracy/len(predicts_validate)))
 
 
-#plt.show()
+# plt.show()
 
 # derivatives voor alle variabelen.
 # grad_w0 = x (outer prod) grad_r // geeft een matrix
@@ -261,3 +265,80 @@ print("accuracy: " + str(accuracy/len(predicts_validate)))
 # grad_q = deriv_sigmoid(q) * (o - y)
 
 # een begin
+
+# hyper_list = []
+# # Hyperparameter optimization
+# for hid_0_neurons in range(1, 25):
+#     print(hid_0_neurons)
+#     for hid_1_neurons in range(1, 25):
+#         for sigma in [0.1, 0.5, 1]:
+#             for learning_rate in [0.01, 0.1, 1]:
+#                 W0 = np.random.normal(0, sigma, (IN_SIZE, hid_0_neurons))
+#                 W1 = np.random.normal(0, sigma, (hid_0_neurons, hid_1_neurons))
+#                 W2 = np.random.normal(0, sigma, (hid_1_neurons, OUT_SIZE))
+#
+#                 b0 = np.random.normal(0, sigma, hid_0_neurons)
+#                 b1 = np.random.normal(0, sigma, hid_1_neurons)
+#                 b2 = np.random.normal(0, sigma, OUT_SIZE)
+#
+#                 for i in range(500):  # 10000 epochs
+#                     # take random input_training
+#                     index = randint(0, input_training.shape[1] - 1)
+#                     x = np.array(input_training[:, index]).T
+#                     y = df_train.loc[index, "y"]
+#
+#                     # forward pass
+#                     r = (W0.T @ x) + b0
+#                     h0 = ReLU(r)
+#                     p = (W1.T @ h0) + b1
+#                     h1 = ReLU(p)
+#                     q = (W2.T @ h1) + b2
+#                     output = sigmoid(q)
+#
+#                     # back propagation
+#                     grad_q_vec = grad_q(q, output, y)
+#                     grad_W2 = np.outer(h1, grad_q_vec)
+#                     grad_b2 = grad_q_vec
+#
+#                     grad_p_vec = grad_p(p, W2, grad_q_vec)
+#                     grad_W1 = np.outer(h0, grad_p_vec)
+#                     grad_b1 = grad_p_vec
+#
+#                     grad_r_vec = grad_r(r, W1, grad_p_vec)
+#                     grad_W0 = np.outer(x, grad_r_vec)
+#                     grad_b0 = grad_r_vec
+#
+#                     # Gradient descent
+#                     W0 -= learning_rate * grad_W0
+#                     b0 -= learning_rate * grad_b0
+#
+#                     W1 -= learning_rate * grad_W1
+#                     b1 -= learning_rate * grad_b1
+#
+#                     W2 -= learning_rate * grad_W2
+#                     b2 -= learning_rate * grad_b2
+#
+#                 # Calculate accuracy of trained model
+#                 predicts_validate = np.zeros(input_validate.shape[1])
+#                 for i in range(input_validate.shape[1]):
+#                     x = np.array(input_validate[:, i]).T
+#
+#                     # forward pass
+#                     r = (W0.T @ x) + b0
+#                     h0 = ReLU(r)
+#                     p = (W1.T @ h0) + b1
+#                     h1 = ReLU(p)
+#                     q = (W2.T @ h1) + b2
+#                     output = sigmoid(q)
+#                     predicts_validate[i] = int(round(output[0]))
+#
+#                 hyper_list.append([hid_0_neurons, hid_1_neurons, sigma, learning_rate,
+#                                    accuracy_score(y_vec_validate, predicts_validate)])
+#
+# hyper_dataframe = pd.DataFrame(hyper_list, columns=["hid_0_size", "hid_1_size", "sigma", "learning_rate", "accuracy"])
+#
+# fig_hyper = px.parallel_coordinates(hyper_dataframe, color="accuracy", labels={"hid_0_size": "Hidden 0 neuron count",
+#                             "hid_1_size": "Hidden 1 neuron count", "sigma": "Parameter init variance",
+#                             "learning_rate": "Learning rate", "accuracy": "Accuracy", },
+#                             color_continuous_scale=px.colors.diverging.Tealrose)
+# fig_hyper.show()
